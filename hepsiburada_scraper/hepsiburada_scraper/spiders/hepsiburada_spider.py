@@ -53,7 +53,6 @@ class HepsiburadaLaptopSpider(scrapy.Spider):
     """
 
     def start_requests(self):
-        # Iterate over pages from ?sayfa=5 to ?sayfa=15
         for page_number in range(self.start_page, self.end_page + 1):
             url = f"{self.base_url}{page_number}"
             yield SplashRequest(
@@ -69,21 +68,19 @@ class HepsiburadaLaptopSpider(scrapy.Spider):
             )
 
     def parse(self, response):
-        # Find all <ul> elements containing product lists
+
         ul_elements = response.css('ul.productListContent-frGrtf5XrVXRwJ05HUfU')
         
-        # Collect product links from each <li> inside the <ul>
         for ul in ul_elements:
             li_elements = ul.css('li.productListContent-zAP0Y5msy8OHn5z7T_K_')
             for item in li_elements:
                 if self.total_products_collected >= self.max_total_products:
-                    return  # Stop once 500 products are collected
+                    return  
 
-                # Extract the product link
                 link = item.css('a.moria-ProductCard-gyqBb::attr(href)').get()
                 if link:
                     self.total_products_collected += 1
-                    # Follow the product link to scrape more data from the product page
+
                     product_url = response.urljoin(link)
                     yield SplashRequest(
                         url=product_url,
@@ -101,17 +98,17 @@ class HepsiburadaLaptopSpider(scrapy.Spider):
     def parse_product_details(self, response):
         product_url = response.meta['product_url']
 
-        # Initialize the variables to store the extracted data
+
         islemci_tipi = None
         ssd_kapasitesi = None
         ram_sistem_bellek = None
 
-        # Loop through each detail block
+
         product_details = response.css('div.jkj4C4LML4qv2Iq8GkL3')
 
 
         for detail in product_details:
-            # Extract the label (text1)
+
             label = detail.css('div.OXP5AzPvafgN_i3y6wGp::text').get()
             value = detail.css('div.AxM3TmSghcDRH1F871Vh a::attr(title)').get()
 
